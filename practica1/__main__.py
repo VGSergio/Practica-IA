@@ -2,7 +2,7 @@ from practica1 import agent, joc
 
 
 def main():
-    rana = agent.RanaProfunditat("Miquel")
+    rana = agent.Rana("Miquel")
     lab = joc.Laberint([rana], parets=True)
     lab.comencar()
 
