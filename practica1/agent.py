@@ -27,15 +27,19 @@ class Rana(joc.Rana):
 
 
 class Estat:
+
     def __init__(self, info: dict = None, pare=None):
+        aux = {AccionsRana: AccionsRana.ESPERAR, Direccio: None}
         if info is None:
-            info = {}
+            info = aux
+        else:
+            info = info | aux
 
         self.__info = info
         self.__pare = pare
 
     def __hash__(self):
-        return hash(tuple(self.__info.items()))
+        return hash(tuple(frozenset(self.__info)))
 
     def __getitem__(self, key):
         return self.__info[key]
@@ -44,9 +48,10 @@ class Estat:
         self.__info[key] = value
 
     def __eq__(self, other):
-        """Overrides the default implementation"""
         return (
                 self[ClauPercepcio.POSICIO] == other[ClauPercepcio.POSICIO]
+                and self[AccionsRana] == other[AccionsRana]
+                and self[Direccio] == other[Direccio]
         )
 
     def legal(self) -> bool:
@@ -57,6 +62,26 @@ class Estat:
         parets = self[ClauPercepcio.PARETS]
 
         tam = self[ClauPercepcio.MIDA_TAULELL]
+
+        accio = self[AccionsRana]
+
+        if accio is AccionsRana.ESPERAR:
+            return True
+        elif accio is AccionsRana.BOTAR:
+            move = self[Direccio]
+            pos = list(pos)
+            match move:
+                case Direccio.DALT:
+                    pos[1] -= 1
+                case Direccio.DRETA:
+                    pos[0] += 1
+                case Direccio.BAIX:
+                    pos[1] += 1
+                case Direccio.ESQUERRE:
+                    pos[0] -= 1
+                case _:
+                    print("Error at agent.legal, move switch")
+            pos = tuple(pos)
 
         if pos not in parets and 0 <= pos[0] <= tam[0] and 0 <= pos[1] <= tam[1]:
             return True
@@ -69,16 +94,19 @@ class Estat:
     def genera_fill(self) -> list:
         estats_generats = []
         for accio in AccionsRana:
-            if accio == AccionsRana.BOTAR:
+            info = {AccionsRana: accio, Direccio: None}
+
+            if accio == AccionsRana.ESPERAR:
                 nou_estat = copy.deepcopy(self)
-                nou_estat.pare = (self, accio)
-                if not nou_estat.legal():
-                    continue
+                nou_estat.__pare = self
+                nou_estat.__info = self.__info | info
                 estats_generats.append(nou_estat)
             else:
                 for move in Direccio:
                     nou_estat = copy.deepcopy(self)
-                    nou_estat.pare = (self, tuple[accio, move])
+                    nou_estat.__pare = self
+                    info[Direccio] = move
+                    nou_estat.__info = self.__info | info
                     if not nou_estat.legal():
                         continue
                     estats_generats.append(nou_estat)

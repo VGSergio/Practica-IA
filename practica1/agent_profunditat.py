@@ -7,20 +7,70 @@ from practica1.agent import Estat
 class RanaProfunditat(joc.Rana):
     def __init__(self, *args, **kwargs):
         super(RanaProfunditat, self).__init__(*args, **kwargs)
+        self.__oberts = None
+        self.__tancats = None
+        self.__accions = None
 
-    def pinta(self, display):
-        pass
+    def _cerca(self, estat: Estat):
+        self.__oberts = []
+        self.__tancats = set()
+
+        self.__oberts.append(estat)
+        actual = None
+
+        while len(self.__oberts) > 0:
+            actual = self.__oberts.pop()
+
+            if actual in self.__tancats:
+                continue
+
+            if not actual.legal():
+                self.__tancats.add(actual)
+                continue
+
+            estats_fills = actual.genera_fill()
+
+            if actual.es_meta():
+                break
+
+            for estat_f in estats_fills:
+                self.__oberts.append(estat_f)
+
+            self.__tancats.add(actual)
+
+        if actual is None:
+            raise ValueError("Error impossible")
+
+        if actual.es_meta():
+            accions = []
+            iterador = actual
+
+            while iterador.pare is not None:
+                pare, accio = iterador.pare
+
+                accions.append(accio)
+                iterador = pare
+            self.__accions = accions
+            return True
+        else:
+            return False
 
     def actua(
             self, percep: entorn.Percepcio
     ) -> entorn.Accio | tuple[entorn.Accio, object]:
-        print(Estat)
+        estat = Estat(percep.to_dict())
+
+        if self.__accions is None:
+            self._cerca(estat=estat)
+
+        if len(self.__accions) > 0:
+            return self.__accions.pop()
+        else:
+            return AccionsRana.ESPERAR
+
+        """"
         pos_rana = percep[ClauPercepcio.POSICIO][self.nom]
         pos_pizza = percep[ClauPercepcio.OLOR]
-
-        estat = Estat(percep, self.nom)
-        fills = estat.genera_fill()
-        #print(fills)
 
         if pos_rana == pos_pizza:
             return AccionsRana.ESPERAR
@@ -40,3 +90,4 @@ class RanaProfunditat(joc.Rana):
             if dif_y < 0:
                 direccio = Direccio.BAIX
             return AccionsRana.MOURE, direccio
+        """
