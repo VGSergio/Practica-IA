@@ -1,8 +1,8 @@
-from practica1 import agent, joc
+from practica1 import agent, agent_profunditat, joc
 
 
 def main():
-    rana = agent.Rana("Miquel")
+    rana = agent_profunditat.RanaProfunditat("Miquel")
     lab = joc.Laberint([rana], parets=True)
     lab.comencar()
 

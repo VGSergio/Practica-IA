@@ -23,30 +23,7 @@ class Rana(joc.Rana):
     def actua(
             self, percep: entorn.Percepcio
     ) -> entorn.Accio | tuple[entorn.Accio, object]:
-        pos_rana = percep[ClauPercepcio.POSICIO][self.nom]
-        pos_pizza = percep[ClauPercepcio.OLOR]
-
-        estat = Estat((percep, self.nom))
-        estat.genera_fill()
-
-        if pos_rana == pos_pizza:
-            return AccionsRana.ESPERAR
-
-        dif_x = pos_rana[0] - pos_pizza[0]
-        dif_y = pos_rana[1] - pos_pizza[1]
-        direccio = None
-        if dif_x != 0:
-            if dif_x > 0:
-                direccio = Direccio.ESQUERRE
-            if dif_x < 0:
-                direccio = Direccio.DRETA
-            return AccionsRana.MOURE, direccio
-        if dif_y != 0:
-            if dif_y > 0:
-                direccio = Direccio.DALT
-            if dif_y < 0:
-                direccio = Direccio.BAIX
-            return AccionsRana.MOURE, direccio
+        pass
 
 
 class Estat:
@@ -73,28 +50,24 @@ class Estat:
         )
 
     def legal(self) -> bool:
-        nom = self.__info[1]
+        pos = self[ClauPercepcio.POSICIO]
+        nom = list(pos.keys())[0]
+        pos = pos[nom]
 
-        pos = ClauPercepcio.POSICIO
-        pos = self.__info[0][pos][nom]
+        parets = self[ClauPercepcio.PARETS]
 
-        parets = ClauPercepcio.PARETS
-        parets = self.__info[0][parets]
-
-        tam = ClauPercepcio.MIDA_TAULELL
-        tam = self.__info[0][tam]
+        tam = self[ClauPercepcio.MIDA_TAULELL]
 
         if pos not in parets and 0 <= pos[0] <= tam[0] and 0 <= pos[1] <= tam[1]:
-            return False
+            return True
 
-        return True
+        return False
 
     def es_meta(self) -> bool:
         return self[ClauPercepcio.POSICIO] == self[ClauPercepcio.OLOR]
 
     def genera_fill(self) -> list:
         estats_generats = []
-
         for accio in AccionsRana:
             if accio == AccionsRana.BOTAR:
                 nou_estat = copy.deepcopy(self)
