@@ -86,7 +86,7 @@ class Estat:
 
             pos = tuple(pos)
 
-        if pos not in parets and 0 <= pos[0] <= tam[0] and 0 <= pos[1] <= tam[1]:
+        if pos not in parets and 0 <= pos[0] < tam[0] and 0 <= pos[1] < tam[1]:
             return True
 
         return False

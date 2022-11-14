@@ -17,11 +17,8 @@ class RanaProfunditat(joc.Rana):
 
         self.__oberts.append(estat)
 
-        iterations = 0
-        max_iterations = 1000
-
         actual = None
-        while len(self.__oberts) > 0 and iterations < max_iterations:
+        while len(self.__oberts) > 0:
             actual = self.__oberts.pop()
 
             if actual in self.__tancats:
@@ -40,12 +37,12 @@ class RanaProfunditat(joc.Rana):
                 self.__oberts.append(estat_f)
 
             self.__tancats.add(actual)
-            iterations += 1
 
         if actual is None:
             raise ValueError("Error impossible")
 
         if actual.es_meta():
+            print("Ole Ole")
             accions = []
             iterador = actual
 
@@ -67,11 +64,6 @@ class RanaProfunditat(joc.Rana):
     ) -> entorn.Accio | tuple[entorn.Accio, object]:
         estat = Estat(percep.to_dict())
 
-        print("")
-        print(self.__oberts)
-        print(self.__tancats)
-        print(self.__accions)
-
         if self.__accions is None:
             self._cerca(estat=estat)
 
@@ -80,7 +72,10 @@ class RanaProfunditat(joc.Rana):
                 return self.__accions.pop()
         else:
             estat = self.__tancats.pop()
-            print(estat.__getitem__(AccionsRana), estat.__getitem__(Direccio))
+
+            while estat.__getitem__(AccionsRana) == AccionsRana.ESPERAR:
+                estat = self.__tancats.pop();
+
             return estat.__getitem__(AccionsRana), estat.__getitem__(Direccio)
 
         """
