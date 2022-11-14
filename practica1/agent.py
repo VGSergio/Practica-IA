@@ -48,8 +48,15 @@ class Estat:
         self.__info[key] = value
 
     def __eq__(self, other):
+        pos_self = self[ClauPercepcio.POSICIO]
+        pos_other = other[ClauPercepcio.POSICIO]
+        name_self = list(pos_self.keys())[0]
+        name_other = list(pos_other.keys())[0]
+        pos_self = pos_self[name_self]
+        pos_other = pos_other[name_other]
         return (
-                self[ClauPercepcio.POSICIO] == other[ClauPercepcio.POSICIO]
+                pos_self == pos_other
+                and name_self == name_other
                 and self[AccionsRana] == other[AccionsRana]
                 and self[Direccio] == other[Direccio]
         )
@@ -83,7 +90,6 @@ class Estat:
                     pos[0] -= step
                 case _:
                     print("Error at agent.legal, move switch")
-
             pos = tuple(pos)
 
         if pos not in parets and 0 <= pos[0] < tam[0] and 0 <= pos[1] < tam[1]:

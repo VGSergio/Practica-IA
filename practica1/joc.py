@@ -221,7 +221,6 @@ class Laberint(joc.Joc):
 
                 if ha_menjat:
                     print(f"Agent {agent_actual.nom} ha guanyat")
-
     def _draw(self) -> None:
         super(Laberint, self)._draw()
         window = self._game_window
