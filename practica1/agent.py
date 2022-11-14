@@ -64,23 +64,26 @@ class Estat:
         tam = self[ClauPercepcio.MIDA_TAULELL]
 
         accio = self[AccionsRana]
-
         if accio is AccionsRana.ESPERAR:
             return True
-        elif accio is AccionsRana.BOTAR:
-            move = self[Direccio]
+        else:
+            step = 1
+            if accio is AccionsRana.BOTAR:
+                step = 2
+            direccio = self[Direccio]
             pos = list(pos)
-            match move:
+            match direccio:
                 case Direccio.DALT:
-                    pos[1] -= 1
+                    pos[1] -= step
                 case Direccio.DRETA:
-                    pos[0] += 1
+                    pos[0] += step
                 case Direccio.BAIX:
-                    pos[1] += 1
+                    pos[1] += step
                 case Direccio.ESQUERRE:
-                    pos[0] -= 1
+                    pos[0] -= step
                 case _:
                     print("Error at agent.legal, move switch")
+
             pos = tuple(pos)
 
         if pos not in parets and 0 <= pos[0] <= tam[0] and 0 <= pos[1] <= tam[1]:
@@ -94,14 +97,8 @@ class Estat:
     def genera_fill(self) -> list:
         estats_generats = []
         for accio in AccionsRana:
-            info = {AccionsRana: accio, Direccio: None}
-
-            if accio == AccionsRana.ESPERAR:
-                nou_estat = copy.deepcopy(self)
-                nou_estat.__pare = self
-                nou_estat.__info = self.__info | info
-                estats_generats.append(nou_estat)
-            else:
+            if accio != AccionsRana.ESPERAR:
+                info = {AccionsRana: accio, Direccio: None}
                 for move in Direccio:
                     nou_estat = copy.deepcopy(self)
                     nou_estat.__pare = self

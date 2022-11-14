@@ -16,9 +16,12 @@ class RanaProfunditat(joc.Rana):
         self.__tancats = set()
 
         self.__oberts.append(estat)
-        actual = None
 
-        while len(self.__oberts) > 0:
+        iterations = 0
+        max_iterations = 1000
+
+        actual = None
+        while len(self.__oberts) > 0 and iterations < max_iterations:
             actual = self.__oberts.pop()
 
             if actual in self.__tancats:
@@ -37,6 +40,7 @@ class RanaProfunditat(joc.Rana):
                 self.__oberts.append(estat_f)
 
             self.__tancats.add(actual)
+            iterations += 1
 
         if actual is None:
             raise ValueError("Error impossible")
@@ -47,6 +51,9 @@ class RanaProfunditat(joc.Rana):
 
             while iterador.pare is not None:
                 pare, accio = iterador.pare
+
+                print("pare", pare)
+                print("accio", accio)
 
                 accions.append(accio)
                 iterador = pare
@@ -60,20 +67,28 @@ class RanaProfunditat(joc.Rana):
     ) -> entorn.Accio | tuple[entorn.Accio, object]:
         estat = Estat(percep.to_dict())
 
+        print("")
+        print(self.__oberts)
+        print(self.__tancats)
+        print(self.__accions)
+
         if self.__accions is None:
             self._cerca(estat=estat)
 
-        if len(self.__accions) > 0:
-            return self.__accions.pop()
+        if self.__accions is not None:
+            if len(self.__accions) > 0:
+                return self.__accions.pop()
         else:
-            return AccionsRana.ESPERAR
+            estat = self.__tancats.pop()
+            print(estat.__getitem__(AccionsRana), estat.__getitem__(Direccio))
+            return estat.__getitem__(AccionsRana), estat.__getitem__(Direccio)
 
-        """"
+        """
         pos_rana = percep[ClauPercepcio.POSICIO][self.nom]
         pos_pizza = percep[ClauPercepcio.OLOR]
 
         if pos_rana == pos_pizza:
-            return AccionsRana.ESPERAR
+            return pygame.QUIT
 
         dif_x = pos_rana[0] - pos_pizza[0]
         dif_y = pos_rana[1] - pos_pizza[1]
