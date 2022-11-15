@@ -62,38 +62,23 @@ class Estat:
         )
 
     def legal(self) -> bool:
-        pos = self[ClauPercepcio.POSICIO]
-        nom = list(pos.keys())[0]
-        pos = pos[nom]
-
         parets = self[ClauPercepcio.PARETS]
 
         tam = self[ClauPercepcio.MIDA_TAULELL]
 
-        accio = self[AccionsRana]
-        if accio is AccionsRana.ESPERAR:
-            return True
-        else:
-            step = 1
-            if accio is AccionsRana.BOTAR:
-                step = 2
-            direccio = self[Direccio]
-            pos = list(pos)
-            match direccio:
-                case Direccio.DALT:
-                    pos[1] -= step
-                case Direccio.DRETA:
-                    pos[0] += step
-                case Direccio.BAIX:
-                    pos[1] += step
-                case Direccio.ESQUERRE:
-                    pos[0] -= step
-                case _:
-                    print("Error at agent.legal, move switch")
-            pos = tuple(pos)
+        new_pos = self.__suigiente_casilla()
 
-        if pos not in parets and 0 <= pos[0] < tam[0] and 0 <= pos[1] < tam[1]:
-            return True
+        if (tam[0] > new_pos[0] >= 0) and (tam[1] > new_pos[1] >= 0):
+            if new_pos not in parets:
+                # print("Legal y validada")
+                return True
+            else:
+                # print(parets)
+                # print("Ilegal porque se mete en la pared")
+                pass
+        else:
+            # print("Se sale del tablero")
+            pass
 
         return False
 
@@ -102,19 +87,45 @@ class Estat:
 
     def genera_fill(self) -> list:
         estats_generats = []
+
         for accio in AccionsRana:
             if accio != AccionsRana.ESPERAR:
-                info = {AccionsRana: accio, Direccio: None}
                 for move in Direccio:
                     nou_estat = copy.deepcopy(self)
-                    nou_estat.__pare = self
-                    info[Direccio] = move
+                    nou_estat.__pare = (self, accio, move)
+                    info = {AccionsRana: accio, Direccio: move}
                     nou_estat.__info = self.__info | info
-                    if not nou_estat.legal():
-                        continue
-                    estats_generats.append(nou_estat)
+                    if nou_estat.legal():
+                        estats_generats.append(nou_estat)
 
         return estats_generats
+
+    def __suigiente_casilla(self) -> tuple:
+        pos = self[ClauPercepcio.POSICIO]
+        name = list(pos.keys())[0]
+        pos = pos[name]
+
+        accio = self[AccionsRana]
+        if accio is AccionsRana.ESPERAR:
+            return pos
+
+        step = 1
+        if accio is AccionsRana.BOTAR:
+            step = 2
+
+        direccio = self[Direccio]
+        pos = list(pos)
+        match direccio:
+            case Direccio.DALT:
+                pos[1] -= step
+            case Direccio.DRETA:
+                pos[0] += step
+            case Direccio.BAIX:
+                pos[1] += step
+            case Direccio.ESQUERRE:
+                pos[0] -= step
+
+        return tuple(pos)
 
     @property
     def pare(self):
