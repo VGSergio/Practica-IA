@@ -106,9 +106,9 @@ class Casella:
 
     def is_lliure(self):
         return (
-            (self.__tipus is TipusCas.LLIURE)
-            and (self.__agent is None)
-            and not self.__menjar
+                (self.__tipus is TipusCas.LLIURE)
+                and (self.__agent is None)
+                and not self.__menjar
         )
 
     def draw(self, window, x, y):
@@ -212,6 +212,7 @@ class Laberint(joc.Joc):
 
         if nc_x is not None:
             if (not (8 > nc_y >= 0)) or (not (8 > nc_x >= 0)):
+                print(nc_x, nc_y)
                 raise agent_lib.Trampes()
 
             if self.__caselles[nc_x][nc_y].is_accessible():
@@ -221,6 +222,7 @@ class Laberint(joc.Joc):
 
                 if ha_menjat:
                     print(f"Agent {agent_actual.nom} ha guanyat")
+
     def _draw(self) -> None:
         super(Laberint, self)._draw()
         window = self._game_window

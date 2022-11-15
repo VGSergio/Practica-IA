@@ -12,22 +12,17 @@ class RanaProfunditat(joc.Rana):
     def __init__(self, *args, **kwargs):
         super(RanaProfunditat, self).__init__(*args, **kwargs)
         self.__oberts = None
-        self.__tancats = None
+        self.__tancats = set()
         self.__accions = None
 
     def _cerca(self, estat: Estat):
         self.__oberts = []
-        self.__tancats = set()
 
         self.__oberts.append(estat)
 
-        max_profundidad = 120
-        profundidad = 1
-
         actual = None
-        while len(self.__oberts) > 0 and profundidad <= max_profundidad:
+        while len(self.__oberts) > 0:
             actual = self.__oberts.pop()
-
             if actual in self.__tancats:
                 continue
 
@@ -44,8 +39,6 @@ class RanaProfunditat(joc.Rana):
                 self.__oberts.append(estat_f)
 
             self.__tancats.add(actual)
-            profundidad += 1
-
         if actual is None:
             raise ValueError("Error impossible")
 
@@ -59,10 +52,8 @@ class RanaProfunditat(joc.Rana):
                 accions.append(accio)
                 iterador = pare
             self.__accions = accions
-
             return True
         else:
-            self.__accions = [actual]
             return False
 
     def actua(
@@ -76,7 +67,7 @@ class RanaProfunditat(joc.Rana):
         if self.__accions is None:
             self._cerca(estat=estat)
 
-        if len(self.__accions) > 0:
+        if self.__accions:
             aux = self.__accions.pop()
             return aux[AccionsRana], aux[Direccio]
         else:
