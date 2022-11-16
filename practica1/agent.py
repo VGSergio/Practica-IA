@@ -116,14 +116,14 @@ class Estat:
         direccio = self[Direccio]
         pos = list(pos)
         match direccio:
-            case Direccio.DALT:
-                pos[1] -= step
-            case Direccio.DRETA:
-                pos[0] += step
-            case Direccio.BAIX:
-                pos[1] += step
             case Direccio.ESQUERRE:
                 pos[0] -= step
+            case Direccio.DRETA:
+                pos[0] += step
+            case Direccio.DALT:
+                pos[1] -= step
+            case Direccio.BAIX:
+                pos[1] += step
 
         return tuple(pos)
 
