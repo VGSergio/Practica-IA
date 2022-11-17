@@ -29,11 +29,8 @@ class Rana(joc.Rana):
 class Estat:
 
     def __init__(self, info: dict = None, pare=None):
-        aux = {AccionsRana: AccionsRana.ESPERAR, Direccio: None}
         if info is None:
-            info = aux
-        else:
-            info = info | aux
+            info = {}
 
         self.__info = info
         self.__pare = pare
@@ -48,7 +45,6 @@ class Estat:
         self.__info[key] = value
 
     def __eq__(self, other):
-        return self.__info == other.__info
         pos_self = self[ClauPercepcio.POSICIO]
         pos_other = other[ClauPercepcio.POSICIO]
         name_self = list(pos_self.keys())[0]
@@ -92,10 +88,9 @@ class Estat:
         for accio in AccionsRana:
             if accio != AccionsRana.ESPERAR:
                 for move in Direccio:
-                    copia = copy.deepcopy(self)
-                    nou_estat = Estat(info=copia.__info, pare=copia)
-                    info = {AccionsRana: accio, Direccio: move}
-                    nou_estat.__info = self.__info | info
+                    padre = copy.deepcopy(self)
+                    info = padre.__info | {AccionsRana: accio, Direccio: move}
+                    nou_estat = Estat(info=info, pare=padre)
                     if nou_estat.legal():
                         fills.append(nou_estat)
         return fills

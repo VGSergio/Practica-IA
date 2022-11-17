@@ -58,17 +58,16 @@ class RanaProfunditat(joc.Rana):
     def actua(
             self, percep: entorn.Percepcio
     ) -> entorn.Accio | tuple[entorn.Accio, object]:
+
         if self.esta_botant():
             return AccionsRana.ESPERAR
-
-        estat = Estat(percep.to_dict())
+        estat = Estat(info=percep.to_dict() | {AccionsRana: AccionsRana.ESPERAR, Direccio: None, RanaProfunditat: self.__tancats})
 
         if not self.__accions:
             self._cerca(estat=estat)
 
         if len(self.__accions) > 0:
             aux = self.__accions.pop()
-            self.__tancats.add(estat)
             return aux[AccionsRana], aux[Direccio]
         else:
             print("Esperar")
