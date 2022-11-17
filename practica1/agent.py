@@ -39,7 +39,7 @@ class Estat:
         self.__pare = pare
 
     def __hash__(self):
-        return hash(tuple(frozenset(self.__info)))
+        return hash(tuple(self.__info))
 
     def __getitem__(self, key):
         return self.__info[key]
@@ -48,6 +48,7 @@ class Estat:
         self.__info[key] = value
 
     def __eq__(self, other):
+        return self.__info == other.__info
         pos_self = self[ClauPercepcio.POSICIO]
         pos_other = other[ClauPercepcio.POSICIO]
         name_self = list(pos_self.keys())[0]
@@ -66,7 +67,7 @@ class Estat:
 
         tam = self[ClauPercepcio.MIDA_TAULELL]
 
-        new_pos = self.__suigiente_casilla()
+        new_pos = self.__sigiente_casilla()
 
         if (tam[0] > new_pos[0] >= 0) and (tam[1] > new_pos[1] >= 0):
             if new_pos not in parets:
@@ -85,22 +86,21 @@ class Estat:
     def es_meta(self) -> bool:
         return self[ClauPercepcio.POSICIO] == self[ClauPercepcio.OLOR]
 
-    def genera_fill(self) -> list:
-        estats_generats = []
+    def genera_fills(self) -> list:
+        fills = []
 
         for accio in AccionsRana:
             if accio != AccionsRana.ESPERAR:
                 for move in Direccio:
-                    nou_estat = copy.deepcopy(self)
-                    nou_estat.__pare = (self, accio, move)
+                    copia = copy.deepcopy(self)
+                    nou_estat = Estat(info=copia.__info, pare=copia)
                     info = {AccionsRana: accio, Direccio: move}
                     nou_estat.__info = self.__info | info
                     if nou_estat.legal():
-                        estats_generats.append(nou_estat)
+                        fills.append(nou_estat)
+        return fills
 
-        return estats_generats
-
-    def __suigiente_casilla(self) -> tuple:
+    def __sigiente_casilla(self) -> tuple:
         pos = self[ClauPercepcio.POSICIO]
         name = list(pos.keys())[0]
         pos = pos[name]

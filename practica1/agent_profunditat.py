@@ -17,27 +17,26 @@ class RanaProfunditat(joc.Rana):
 
         self.__oberts.append(estat)
 
-        count = 0
         actual = None
-        while not len(self.__oberts) == 0:
+        while len(self.__oberts) > 0:
             actual = self.__oberts.pop()
-            count += 1
 
-            if actual and actual.es_meta():
-                explored = []
-                while actual.pare:
-                    explored.append(actual)
-                    actual = actual.pare
+            if actual in self.__tancats:
+                continue
+
+            if not actual.legal():
+                self.__tancats.add(actual)
+                continue
+
+            estats_fills = actual.genera_fills()
+
+            if actual.es_meta():
                 break
 
-            estats_fills = actual.genera_fill()
-
             for estat_f in estats_fills:
-                if estat_f not in self.__tancats:
-                    self.__oberts.append(estat_f)
+                self.__oberts.append(estat_f)
 
             self.__tancats.add(actual)
-
         if actual is None:
             raise ValueError("Error impossible")
 
@@ -53,6 +52,7 @@ class RanaProfunditat(joc.Rana):
             self.__accions = accions
             return True
         else:
+            self.__accions = [actual]
             return False
 
     def actua(
@@ -62,20 +62,14 @@ class RanaProfunditat(joc.Rana):
             return AccionsRana.ESPERAR
 
         estat = Estat(percep.to_dict())
-        self.__estat = estat
 
-        if self.__accions is None:
+        if not self.__accions:
             self._cerca(estat=estat)
 
-        if self.__accions:
-            print("1")
+        if len(self.__accions) > 0:
             aux = self.__accions.pop()
+            self.__tancats.add(estat)
             return aux[AccionsRana], aux[Direccio]
         else:
-            print("2")
-            aux = self.__tancats.pop()
-            print(aux[ClauPercepcio.POSICIO])
-            while not aux.legal():
-                aux = self.__tancats.pop()
-                print(aux[ClauPercepcio.POSICIO])
-            return aux[AccionsRana], aux[Direccio]
+            print("Esperar")
+            return AccionsRana.ESPERAR
