@@ -44,7 +44,7 @@ class RanaProfunditat(joc.Rana):
             raise ValueError("Error impossible")
 
         if actual.es_meta():
-            accions = []
+            accions = [actual]
             iterador = actual
 
             while iterador.pare is not None:
@@ -70,8 +70,4 @@ class RanaProfunditat(joc.Rana):
             aux = self.__accions.pop()
             return aux[AccionsRana], aux[Direccio]
         else:
-            print("Esperar")
-            print(list(self.__tancats)[-1])
-            print(list(self.__oberts)[-1])
-            print()
             return estat[AccionsRana], estat[Direccio]
