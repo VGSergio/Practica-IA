@@ -3,6 +3,8 @@ from practica1 import joc
 from practica1.entorn import Direccio, AccionsRana, ClauPercepcio
 from practica1.agent import Estat
 
+from collections import deque
+
 
 class RanaProfunditat(joc.Rana):
     def __init__(self, *args, **kwargs):
@@ -12,14 +14,14 @@ class RanaProfunditat(joc.Rana):
         self.__accions = None
 
     def _cerca(self, estat: Estat):
-        self.__oberts = []
+        self.__oberts = deque()
         self.__tancats = set()
 
         self.__oberts.append(estat)
 
         actual = None
         while len(self.__oberts) > 0:
-            actual = self.__oberts.pop()
+            actual = self.__oberts.popleft()
 
             if actual in self.__tancats:
                 continue
@@ -37,6 +39,7 @@ class RanaProfunditat(joc.Rana):
                 self.__oberts.append(estat_f)
 
             self.__tancats.add(actual)
+
         if actual is None:
             raise ValueError("Error impossible")
 
@@ -45,15 +48,11 @@ class RanaProfunditat(joc.Rana):
             iterador = actual
 
             while iterador.pare is not None:
-                pare, accio = iterador.pare
+                accio = iterador.pare
 
                 accions.append(accio)
-                iterador = pare
+                iterador = iterador.pare
             self.__accions = accions
-            return True
-        else:
-            self.__accions = [actual]
-            return False
 
     def actua(
             self, percep: entorn.Percepcio
@@ -61,9 +60,10 @@ class RanaProfunditat(joc.Rana):
 
         if self.esta_botant():
             return AccionsRana.ESPERAR
-        estat = Estat(info=percep.to_dict() | {AccionsRana: AccionsRana.ESPERAR, Direccio: None, RanaProfunditat: self.__tancats})
 
-        if not self.__accions:
+        estat = Estat(info=percep.to_dict())
+
+        if self.__accions is None:
             self._cerca(estat=estat)
 
         if len(self.__accions) > 0:
@@ -71,4 +71,7 @@ class RanaProfunditat(joc.Rana):
             return aux[AccionsRana], aux[Direccio]
         else:
             print("Esperar")
-            return AccionsRana.ESPERAR
+            print(list(self.__tancats)[-1])
+            print(list(self.__oberts)[-1])
+            print()
+            return estat[AccionsRana], estat[Direccio]

@@ -63,24 +63,21 @@ class Estat:
 
         tam = self[ClauPercepcio.MIDA_TAULELL]
 
-        new_pos = self.__sigiente_casilla()
+        new_pos = self[ClauPercepcio.POSICIO]
+        aux = list(new_pos.keys())
+        new_pos = new_pos[aux[0]]
 
         if (tam[0] > new_pos[0] >= 0) and (tam[1] > new_pos[1] >= 0):
             if new_pos not in parets:
-                # print("Legal y validada")
                 return True
-            else:
-                # print(parets)
-                # print("Ilegal porque se mete en la pared")
-                pass
-        else:
-            # print("Se sale del tablero")
-            pass
 
         return False
 
     def es_meta(self) -> bool:
-        return self[ClauPercepcio.POSICIO] == self[ClauPercepcio.OLOR]
+        pos = self[ClauPercepcio.POSICIO]
+        aux = list(pos.keys())
+        pos = pos[aux[0]]
+        return pos == self[ClauPercepcio.OLOR]
 
     def genera_fills(self) -> list:
         fills = []
@@ -91,14 +88,16 @@ class Estat:
                     padre = copy.deepcopy(self)
                     info = padre.__info | {AccionsRana: accio, Direccio: move}
                     nou_estat = Estat(info=info, pare=padre)
+                    nextpos = nou_estat.__sigiente_casilla()
+                    nou_estat[ClauPercepcio.POSICIO] = nextpos
                     if nou_estat.legal():
                         fills.append(nou_estat)
         return fills
 
     def __sigiente_casilla(self) -> tuple:
-        pos = self[ClauPercepcio.POSICIO]
-        name = list(pos.keys())[0]
-        pos = pos[name]
+        pos: dict[str, tuple[int, int]] = self[ClauPercepcio.POSICIO]
+        aux = list(pos.keys())
+        pos = pos[list(pos.keys())[0]]
 
         accio = self[AccionsRana]
         if accio is AccionsRana.ESPERAR:
@@ -120,7 +119,7 @@ class Estat:
             case Direccio.BAIX:
                 pos[1] += step
 
-        return tuple(pos)
+        return {aux[0]: tuple(pos)}
 
     @property
     def pare(self):
