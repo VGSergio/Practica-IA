@@ -61,7 +61,7 @@ class RanaProfunditat(joc.Rana):
         if self.esta_botant():
             return AccionsRana.ESPERAR
 
-        estat = Estat(info=percep.to_dict())
+        estat = Estat(info=percep.to_dict() | {AccionsRana: AccionsRana.ESPERAR, Direccio: None})
 
         if self.__accions is None:
             self._cerca(estat=estat)
