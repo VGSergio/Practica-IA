@@ -1,6 +1,4 @@
-import abc
 import copy
-from queue import PriorityQueue
 
 from ia_2022 import entorn
 from practica1 import joc
@@ -17,11 +15,6 @@ def _get_players(estat: Estat):
     return noms
 
 
-def is_end(estat: Estat):
-    posiciones = estat[ClauPercepcio.POSICIO].values()
-    return posiciones in estat[ClauPercepcio.OLOR]
-
-
 class RanaMiniMax(joc.Rana):
 
     def __init__(self, *args, **kwargs):
@@ -29,22 +22,18 @@ class RanaMiniMax(joc.Rana):
         self.__accions = None
 
     def minimax(self, estat: Estat, turno_max: bool):
+        score = estat.evaluar()
+        if score != 0:
+            return score
 
-        fills = estat.genera_fills(turno_max)
+        puntuacio_fills = []
+        for estat_fill in estat.genera_fills(turno_max):
+            self.minimax(estat_fill, not turno_max)
 
-        for fill in fills:
-            print(fill)
-
-    # Player 0 is max
-    def max(self, estat: Estat):
-        # -1 - loss
-        # 1  - win
-        maxv = -2
-
-        end = is_end(estat)
-
-    def min(self):
-        pass
+        if turno_max:
+            return max(puntuacio_fills)
+        else:
+            return min(puntuacio_fills)
 
     def actua(
             self, percep: entorn.Percepcio
@@ -119,3 +108,14 @@ class Estat(Estat):
                 pos[1] += step
 
         return tuple(pos)
+
+    def es_meta(self) -> bool:
+        posiciones = self[ClauPercepcio.POSICIO].values()
+        return posiciones in self[ClauPercepcio.OLOR]
+
+    def evaluar(self):
+        if self.es_meta():
+            posiciones = self[ClauPercepcio.POSICIO].values()
+            return 1 if posiciones[0] is self[ClauPercepcio.OLOR] else -1
+        else:
+            return 0
