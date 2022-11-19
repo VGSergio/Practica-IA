@@ -1,3 +1,4 @@
+import abc
 import copy
 from queue import PriorityQueue
 
@@ -7,45 +8,43 @@ from practica1.entorn import Direccio, AccionsRana, ClauPercepcio
 from practica1.agent import Estat
 
 
+def _get_players(estat: Estat):
+    ranas = estat[ClauPercepcio.POSICIO]
+    noms = []
+    for rana in ranas:
+        noms.append(rana)
+
+    return noms
+
+
+def is_end(estat: Estat):
+    posiciones = estat[ClauPercepcio.POSICIO].values()
+    return posiciones in estat[ClauPercepcio.OLOR]
+
+
 class RanaMiniMax(joc.Rana):
 
     def __init__(self, *args, **kwargs):
         super(RanaMiniMax, self).__init__(*args, **kwargs)
         self.__accions = None
 
-    def _cerca(self, estat: Estat):
-        oberts = PriorityQueue()
-        oberts.put((0, estat))
+    def minimax(self, estat: Estat, turno_max: bool):
 
-        tancats = set()
+        fills = estat.genera_fills(turno_max)
 
-        actual = None
-        while not oberts.empty():
-            cost, actual = oberts.get()
+        for fill in fills:
+            print(fill)
 
-            if actual.es_meta():
-                break
+    # Player 0 is max
+    def max(self, estat: Estat):
+        # -1 - loss
+        # 1  - win
+        maxv = -2
 
-            if actual in tancats:
-                continue
+        end = is_end(estat)
 
-            estats_fills = actual.genera_fills()
-
-            for estat_f in estats_fills:
-                oberts.put((estat_f["Coste"], estat_f))
-
-            tancats.add(actual)
-
-        if actual.es_meta():
-            accions = [actual]
-            iterador = actual
-
-            while iterador.pare is not None:
-                accio = iterador.pare
-
-                accions.append(accio)
-                iterador = iterador.pare
-            self.__accions = accions
+    def min(self):
+        pass
 
     def actua(
             self, percep: entorn.Percepcio
@@ -54,12 +53,10 @@ class RanaMiniMax(joc.Rana):
         if self.esta_botant():
             return AccionsRana.ESPERAR
 
-        estat = Estat(
-            info=percep.to_dict() |
-            {AccionsRana: AccionsRana.ESPERAR, Direccio: None, "Coste": 0})
+        estat = Estat(info=percep.to_dict())
 
         if self.__accions is None:
-            self._cerca(estat=estat)
+            self.minimax(estat=estat, turno_max=True)
 
         if len(self.__accions) > 0:
             aux = self.__accions.pop()
@@ -71,48 +68,54 @@ class RanaMiniMax(joc.Rana):
 class Estat(Estat):
 
     def __init__(self, info: dict = None, pare=None):
-        super(Estat, self).__init__(info, pare)
-        self.heuristica()
+        if info is None:
+            info = {}
 
-    def __lt__(self, other):
-        if self["Coste"] + self["Heuristica"] == other["Coste"] + other["Heuristica"]:
-            return self["Heuristica"] < other["Heuristica"]
-        return self["Coste"] + self["Heuristica"] < other["Coste"] + other["Heuristica"]
+        self.__info = info | {AccionsRana: [], Direccio: []}
+        self.__pare = pare
 
-    def heuristica(self):
-        pizza = self[ClauPercepcio.OLOR]
-        pos = self[ClauPercepcio.POSICIO]
-        name = list(pos.keys())[0]
-        pos = pos[name]
+        players = self[ClauPercepcio.POSICIO].keys()
+        for player in players:
+            self[AccionsRana].append({player: AccionsRana.ESPERAR})
+            self[Direccio].append({player: None})
 
-        pos = list(pos)
-        pizza = list(pizza)
-
-        self["Heuristica"] = abs(pizza[0] - pos[0]) + abs(pizza[1] - pos[1])
-
-    def genera_fills(self) -> list:
+    def genera_fills(self, turno_max) -> list:
+        indice = 0 if turno_max else 1
         fills = []
 
         for accio in AccionsRana:
             if accio != AccionsRana.ESPERAR:
                 for move in Direccio:
-                    coste = 1
-                    if accio == AccionsRana.BOTAR:
-                        coste = 6
-
                     padre = copy.deepcopy(self)
-                    coste = coste + padre["Coste"]
-                    info = padre.__info | {AccionsRana: accio, Direccio: move, "Coste": coste}
-                    nou_estat = Estat(info=info, pare=padre)
+                    nou_estat = Estat(info=padre.__info, pare=padre)
+                    player = _get_players(padre)[indice]
+                    nou_estat[AccionsRana][indice][player] = accio
+                    nou_estat[Direccio][indice][player] = move
+                    pos = nou_estat[ClauPercepcio.POSICIO][player]
+                    nou_estat[ClauPercepcio.POSICIO][player] = self.__sigiente_casilla(pos, accio, move)
                     if nou_estat.legal():
                         fills.append(nou_estat)
 
-            else:
-                padre = copy.deepcopy(self)
-                coste = coste + padre["Coste"]
-                info = padre.__info | {AccionsRana: accio, Direccio: None, "Coste": 0.5}
-                nou_estat = Estat(info=info, pare=padre)
-                if nou_estat.legal():
-                    fills.append(nou_estat)
-
         return fills
+
+    def __sigiente_casilla(self, actual, accio: AccionsRana, direccio: Direccio) -> tuple:
+        if accio is AccionsRana.ESPERAR:
+            return actual
+
+        step = 1
+        if accio is AccionsRana.BOTAR:
+            step = 2
+
+        pos = list(actual)
+
+        match direccio:
+            case Direccio.ESQUERRE:
+                pos[0] -= step
+            case Direccio.DRETA:
+                pos[0] += step
+            case Direccio.DALT:
+                pos[1] -= step
+            case Direccio.BAIX:
+                pos[1] += step
+
+        return tuple(pos)

@@ -212,7 +212,6 @@ class Laberint(joc.Joc):
 
         if nc_x is not None:
             if (not (8 > nc_y >= 0)) or (not (8 > nc_x >= 0)):
-                print(nc_x, nc_y)
                 raise agent_lib.Trampes()
 
             if self.__caselles[nc_x][nc_y].is_accessible():

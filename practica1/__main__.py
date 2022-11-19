@@ -2,7 +2,7 @@ from practica1 import agent_profunditat, agente_aestrella, agente_minimax, joc
 
 
 def main():
-    algo = 1
+    algo = 2
     rana = []
     match algo:
         case 0:
