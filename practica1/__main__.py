@@ -2,7 +2,7 @@ from practica1 import agent_profunditat, agente_aestrella, joc
 
 
 def main():
-    algo = 0
+    algo = 1
     rana = None
     match algo:
         case 0:

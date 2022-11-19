@@ -92,6 +92,7 @@ class Estat:
 
         direccio = self[Direccio]
         pos = list(pos)
+
         match direccio:
             case Direccio.ESQUERRE:
                 pos[0] -= step

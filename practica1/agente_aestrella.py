@@ -4,7 +4,6 @@ from queue import PriorityQueue
 from ia_2022 import entorn
 from practica1 import joc
 from practica1.entorn import Direccio, AccionsRana, ClauPercepcio
-from practica1 import agent
 from practica1.agent import Estat
 
 import heapq
@@ -27,7 +26,6 @@ class RanaAEstrella(joc.Rana):
         current = None
         while not frontier.empty():
             current = frontier.get()
-            print(current)
             if current.es_meta():
                 break
 
@@ -74,7 +72,7 @@ class RanaAEstrella(joc.Rana):
             return AccionsRana.ESPERAR
 
 
-class Estat(agent.Estat):
+class Estat(Estat):
 
     def __init__(self, info: dict = None, pare=None):
         super(Estat, self).__init__(info, pare)
@@ -107,16 +105,20 @@ class Estat(agent.Estat):
                 case AccionsRana.BOTAR:
                     coste = 6
 
-            padre = copy.deepcopy(self)
-            coste = coste + padre["Coste"]
-            info = padre.__info | {AccionsRana: accio, Direccio: None, "Coste": coste}
             if accio != AccionsRana.ESPERAR:
                 for move in Direccio:
-                    info[Direccio] = move
+                    padre = copy.deepcopy(self)
+                    coste = coste + padre["Coste"]
+                    info = padre.__info | {AccionsRana: accio, Direccio: move, "Coste": coste}
                     nou_estat = Estat(info=info, pare=padre)
-                    nou_estat[ClauPercepcio.POSICIO] = nextpos
                     if nou_estat.legal():
                         fills.append(nou_estat)
             else:
-                pass
+                padre = copy.deepcopy(self)
+                coste = coste + padre["Coste"]
+                info = padre.__info | {AccionsRana: accio, Direccio: None, "Coste": coste}
+                nou_estat = Estat(info=info, pare=padre)
+                if nou_estat.legal():
+                    fills.append(nou_estat)
+
         return fills

@@ -1,7 +1,7 @@
 import copy
 
 from ia_2022 import entorn
-from practica1 import joc, agent
+from practica1 import joc
 from practica1.entorn import Direccio, AccionsRana, ClauPercepcio
 from practica1.agent import Estat
 
@@ -73,7 +73,7 @@ class RanaProfunditat(joc.Rana):
             return AccionsRana.ESPERAR
 
 
-class Estat(agent.Estat):
+class Estat(Estat):
 
     def __init__(self, info: dict = None, pare=None):
         super(Estat, self).__init__(info, pare)
