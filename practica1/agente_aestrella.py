@@ -16,33 +16,31 @@ class RanaAEstrella(joc.Rana):
         self.__accions = None
 
     def _cerca(self, estat: Estat):
-        frontier = PriorityQueue()
-        frontier.put(estat, 0)
-        came_from = dict()
-        cost_so_far = dict()
-        came_from[estat] = None
-        cost_so_far[estat] = 0
+        oberts = PriorityQueue()
+        oberts.put((0, estat))
 
-        current = None
-        while not frontier.empty():
-            current = frontier.get()
-            if current.es_meta():
+        tancats = set()
+
+        actual = None
+        while not oberts.empty():
+            cost, actual = oberts.get()
+
+            if actual.es_meta():
                 break
 
-            fills = current.genera_fills()
+            if actual in tancats:
+                continue
 
-            for fill in fills:
-                print(fill)
-                new_cost = fill["Coste"] + fill["Heuristica"]
-                if fill not in cost_so_far or new_cost < cost_so_far[fill]:
-                    cost_so_far[fill] = new_cost
-                    priority = new_cost + fill["Heuristica"]
-                    frontier.put(fill, priority)
-                    came_from[fill] = current
+            estats_fills = actual.genera_fills()
 
-        if current.es_meta():
-            accions = [current]
-            iterador = current
+            for estat_f in estats_fills:
+                oberts.put((estat_f["Coste"], estat_f))
+
+            tancats.add(actual)
+
+        if actual.es_meta():
+            accions = [actual]
+            iterador = actual
 
             while iterador.pare is not None:
                 accio = iterador.pare
@@ -78,6 +76,11 @@ class Estat(Estat):
         super(Estat, self).__init__(info, pare)
         self.heuristica()
 
+    def __lt__(self, other):
+        if self["Coste"] + self["Heuristica"] == other["Coste"] + other["Heuristica"]:
+            return self["Heuristica"] < other["Heuristica"]
+        return self["Coste"] + self["Heuristica"] < other["Coste"] + other["Heuristica"]
+
     def heuristica(self):
         pizza = self[ClauPercepcio.OLOR]
         pos = self[ClauPercepcio.POSICIO]
@@ -87,36 +90,29 @@ class Estat(Estat):
         pos = list(pos)
         pizza = list(pizza)
 
-        heu = abs(pizza[0] - pos[0]) + abs(pizza[1] - pos[1])
-
-        self["Heuristica"] = heu
+        self["Heuristica"] = abs(pizza[0] - pos[0]) + abs(pizza[1] - pos[1])
 
     def genera_fills(self) -> list:
         fills = []
 
         for accio in AccionsRana:
-
-            coste = None
-            match accio:
-                case AccionsRana.MOURE:
-                    coste = 1
-                case AccionsRana.ESPERAR:
-                    coste = 0.5
-                case AccionsRana.BOTAR:
-                    coste = 6
-
             if accio != AccionsRana.ESPERAR:
                 for move in Direccio:
+                    coste = 1
+                    if accio == AccionsRana.BOTAR:
+                        coste = 6
+
                     padre = copy.deepcopy(self)
                     coste = coste + padre["Coste"]
                     info = padre.__info | {AccionsRana: accio, Direccio: move, "Coste": coste}
                     nou_estat = Estat(info=info, pare=padre)
                     if nou_estat.legal():
                         fills.append(nou_estat)
+
             else:
                 padre = copy.deepcopy(self)
                 coste = coste + padre["Coste"]
-                info = padre.__info | {AccionsRana: accio, Direccio: None, "Coste": coste}
+                info = padre.__info | {AccionsRana: accio, Direccio: None, "Coste": 0.5}
                 nou_estat = Estat(info=info, pare=padre)
                 if nou_estat.legal():
                     fills.append(nou_estat)
