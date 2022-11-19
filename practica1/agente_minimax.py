@@ -7,10 +7,10 @@ from practica1.entorn import Direccio, AccionsRana, ClauPercepcio
 from practica1.agent import Estat
 
 
-class RanaAEstrella(joc.Rana):
+class RanaMiniMax(joc.Rana):
 
     def __init__(self, *args, **kwargs):
-        super(RanaAEstrella, self).__init__(*args, **kwargs)
+        super(RanaMiniMax, self).__init__(*args, **kwargs)
         self.__accions = None
 
     def _cerca(self, estat: Estat):
@@ -21,7 +21,7 @@ class RanaAEstrella(joc.Rana):
 
         actual = None
         while not oberts.empty():
-            _, actual = oberts.get()
+            cost, actual = oberts.get()
 
             if actual.es_meta():
                 break
@@ -109,6 +109,7 @@ class Estat(Estat):
 
             else:
                 padre = copy.deepcopy(self)
+                coste = coste + padre["Coste"]
                 info = padre.__info | {AccionsRana: accio, Direccio: None, "Coste": 0.5}
                 nou_estat = Estat(info=info, pare=padre)
                 if nou_estat.legal():

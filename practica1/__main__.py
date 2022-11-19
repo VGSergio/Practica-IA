@@ -1,23 +1,23 @@
-from practica1 import agent_profunditat, agente_aestrella, joc
+from practica1 import agent_profunditat, agente_aestrella, agente_minimax, joc
 
 
 def main():
     algo = 1
-    rana = None
+    rana = []
     match algo:
         case 0:
-            rana = agent_profunditat.RanaProfunditat("Miquel")
+            rana.append(agent_profunditat.RanaProfunditat("Miquel"))
         case 1:
-            rana = agente_aestrella.RanaAEstrella("Miquel")
+            rana.append(agente_aestrella.RanaAEstrella("Miquel"))
         case 2:
-            print("No implementado")
+            rana = [agente_minimax.RanaMiniMax("Miquel"), agente_minimax.RanaMiniMax("Xavier")]
             pass
         case 3:
             print("No implementado")
             pass
 
-    if rana:
-        lab = joc.Laberint([rana], parets=True)
+    if len(rana) > 0:
+        lab = joc.Laberint(rana, parets=True)
         lab.comencar()
     else:
         print("Elije un algoritmo a usar")
