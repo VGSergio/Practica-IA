@@ -5,8 +5,7 @@ ClauPercepcio:
     OLOR = 1
     PARETS = 2
 """
-
-import copy
+import abc
 
 from ia_2022 import entorn
 from practica1 import joc
@@ -35,6 +34,10 @@ class Estat:
         self.__info = info
         self.__pare = pare
 
+        pos = self[ClauPercepcio.POSICIO]
+        aux = list(pos.keys())[0]
+        self[ClauPercepcio.POSICIO][aux] = self.__sigiente_casilla()
+
     def __hash__(self):
         return hash(tuple(self.__info))
 
@@ -45,25 +48,17 @@ class Estat:
         self.__info[key] = value
 
     def __eq__(self, other):
-        pos_self = self[ClauPercepcio.POSICIO]
-        pos_other = other[ClauPercepcio.POSICIO]
-        name_self = list(pos_self.keys())[0]
-        name_other = list(pos_other.keys())[0]
-        pos_self = pos_self[name_self]
-        pos_other = pos_other[name_other]
         return (
-                pos_self == pos_other
-                and name_self == name_other
+                self[ClauPercepcio.POSICIO] == other[ClauPercepcio.POSICIO]
                 and self[AccionsRana] == other[AccionsRana]
                 and self[Direccio] == other[Direccio]
         )
 
     def legal(self) -> bool:
         parets = self[ClauPercepcio.PARETS]
-
         tam = self[ClauPercepcio.MIDA_TAULELL]
-
         new_pos = self[ClauPercepcio.POSICIO]
+
         aux = list(new_pos.keys())
         new_pos = new_pos[aux[0]]
 
@@ -79,24 +74,12 @@ class Estat:
         pos = pos[aux[0]]
         return pos == self[ClauPercepcio.OLOR]
 
+    @abc.abstractmethod
     def genera_fills(self) -> list:
-        fills = []
-
-        for accio in AccionsRana:
-            if accio != AccionsRana.ESPERAR:
-                for move in Direccio:
-                    padre = copy.deepcopy(self)
-                    info = padre.__info | {AccionsRana: accio, Direccio: move}
-                    nou_estat = Estat(info=info, pare=padre)
-                    nextpos = nou_estat.__sigiente_casilla()
-                    nou_estat[ClauPercepcio.POSICIO] = nextpos
-                    if nou_estat.legal():
-                        fills.append(nou_estat)
-        return fills
+        pass
 
     def __sigiente_casilla(self) -> tuple:
         pos: dict[str, tuple[int, int]] = self[ClauPercepcio.POSICIO]
-        aux = list(pos.keys())
         pos = pos[list(pos.keys())[0]]
 
         accio = self[AccionsRana]
@@ -119,7 +102,7 @@ class Estat:
             case Direccio.BAIX:
                 pos[1] += step
 
-        return {aux[0]: tuple(pos)}
+        return tuple(pos)
 
     @property
     def pare(self):

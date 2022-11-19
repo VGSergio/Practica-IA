@@ -1,5 +1,7 @@
+import copy
+
 from ia_2022 import entorn
-from practica1 import joc
+from practica1 import joc, agent
 from practica1.entorn import Direccio, AccionsRana, ClauPercepcio
 from practica1.agent import Estat
 
@@ -9,36 +11,34 @@ from collections import deque
 class RanaProfunditat(joc.Rana):
     def __init__(self, *args, **kwargs):
         super(RanaProfunditat, self).__init__(*args, **kwargs)
-        self.__oberts = None
-        self.__tancats = None
         self.__accions = None
 
     def _cerca(self, estat: Estat):
-        self.__oberts = deque()
-        self.__tancats = set()
+        oberts = deque()
+        tancats = set()
 
-        self.__oberts.append(estat)
+        oberts.append(estat)
 
         actual = None
-        while len(self.__oberts) > 0:
-            actual = self.__oberts.popleft()
-
-            if actual in self.__tancats:
-                continue
-
-            if not actual.legal():
-                self.__tancats.add(actual)
-                continue
-
-            estats_fills = actual.genera_fills()
+        while len(oberts) > 0:
+            actual = oberts.popleft()
 
             if actual.es_meta():
                 break
 
-            for estat_f in estats_fills:
-                self.__oberts.append(estat_f)
+            if actual in tancats:
+                continue
 
-            self.__tancats.add(actual)
+            if not actual.legal():
+                tancats.add(actual)
+                continue
+
+            estats_fills = actual.genera_fills()
+
+            for estat_f in estats_fills:
+                oberts.append(estat_f)
+
+            tancats.add(actual)
 
         if actual is None:
             raise ValueError("Error impossible")
@@ -70,4 +70,23 @@ class RanaProfunditat(joc.Rana):
             aux = self.__accions.pop()
             return aux[AccionsRana], aux[Direccio]
         else:
-            return estat[AccionsRana], estat[Direccio]
+            return AccionsRana.ESPERAR
+
+
+class Estat(agent.Estat):
+
+    def __init__(self, info: dict = None, pare=None):
+        super(Estat, self).__init__(info, pare)
+
+    def genera_fills(self) -> list:
+        fills = []
+
+        for accio in AccionsRana:
+            if accio != AccionsRana.ESPERAR:
+                for move in Direccio:
+                    padre = copy.deepcopy(self)
+                    info = padre.__info | {AccionsRana: accio, Direccio: move}
+                    nou_estat = Estat(info=info, pare=padre)
+                    if nou_estat.legal():
+                        fills.append(nou_estat)
+        return fills
