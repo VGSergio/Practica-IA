@@ -6,14 +6,49 @@ from practica1.entorn import Direccio, AccionsRana, ClauPercepcio
 from practica1.agent import Estat
 
 
+def minimax(turno_max: bool, profundidad: int, estat: Estat):
+    if estat.es_meta() or profundidad == 0:
+        if estat.es_meta(): print("yoooooooooooooooooooooooooyuyuyu")
+        return estat, estat.evaluar()
+
+    if turno_max:
+        hijos = estat.genera_fills(turno_max)
+        acciones_hijos = []
+        puntos_hijos = []
+        for hijo in hijos:
+            accion, puntuacion = minimax(not turno_max, profundidad - 1, hijo)
+            acciones_hijos.append(accion)
+            puntos_hijos.append(puntuacion)
+        puntuacion_max = -2
+        indice_max = -1
+        for puntuacion in range(len(puntos_hijos)):
+            if puntos_hijos[puntuacion] > puntuacion_max:
+                puntuacion_max = puntos_hijos[puntuacion]
+                indice_max = puntuacion
+        return acciones_hijos[indice_max], puntos_hijos[indice_max]
+    else:
+        hijos = estat.genera_fills(turno_max)
+        acciones_hijos = []
+        puntos_hijos = []
+        for hijo in hijos:
+            accion, puntuacion = minimax(not turno_max, profundidad - 1, hijo)
+            acciones_hijos.append(accion)
+            puntos_hijos.append(puntuacion)
+        puntuacion_min = 2
+        indice_min = -1
+        for puntuacion in range(len(puntos_hijos)):
+            if puntos_hijos[puntuacion] < puntuacion_min:
+                puntuacion_min = puntos_hijos[puntuacion]
+                indice_min = puntuacion
+        return acciones_hijos[indice_min], puntos_hijos[indice_min]
+
+
 class RanaMiniMax(joc.Rana):
 
     def __init__(self, *args, **kwargs):
         super(RanaMiniMax, self).__init__(*args, **kwargs)
         self.__accions = None
-
-    def _minimax(self, estat: Estat):
-        pass
+        self.__tancats = set()
 
     def actua(
             self, percep: entorn.Percepcio
@@ -24,11 +59,11 @@ class RanaMiniMax(joc.Rana):
         estat = Estat(info=percep.to_dict())
 
         if self.__accions is None:
-            self._minimax(estat=estat)
-
-        if self.__accions and len(self.__accions) > 0:
-            aux = self.__accions.pop()
-            return aux[AccionsRana], aux[Direccio]
+            aux = minimax(turno_max=True, profundidad=30, estat=estat)
+        print(aux)
+        if aux:
+            aux1 = aux[0]['Miquel']
+            return aux1[AccionsRana], aux1[Direccio]
         else:
             return AccionsRana.ESPERAR
 
@@ -46,10 +81,8 @@ class Estat(Estat):
         for player in players:
             pos = self[ClauPercepcio.POSICIO][player]
             self[player] = {AccionsRana: AccionsRana.ESPERAR, Direccio: None, ClauPercepcio.POSICIO: pos}
-        # self.__info.pop(ClauPercepcio.POSICIO)
 
     def genera_fills(self, turno_max) -> list:
-        indice = 0 if turno_max else 1
         fills = []
 
         for accio in AccionsRana:
@@ -58,6 +91,8 @@ class Estat(Estat):
                     padre = copy.deepcopy(self)
                     nou_estat = Estat(info=padre.__info, pare=padre)
                     player = nou_estat.get_max()
+                    if not turno_max:
+                        player = nou_estat.get_min()
                     nou_estat[player][AccionsRana] = accio
                     nou_estat[player][Direccio] = move
                     pos = nou_estat[player][ClauPercepcio.POSICIO]
